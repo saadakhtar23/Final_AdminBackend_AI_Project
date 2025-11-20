@@ -38,22 +38,22 @@ export const login = asyncHandler(async (req, res, next) => {
 // @desc   Get current user
 // @route  GET /api/auth/me
 // @access Private
-export const getMe = asyncHandler(async (req, res) => {
+export const getMe = asyncHandler(async (req, res) => { 
   const user = await User.findById(req.user.id);
   res.status(200).json({ success: true, data: user });
 });
 
-// helper
+// helper 
 const sendTokenResponse = (user, statusCode, res) => {
   const payload = { id: user._id, role: user.role };
   const token = jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpire });
 
   // option: set httpOnly cookie
   const options = {
-    httpOnly: true,
+    httpOnly: true, 
     expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 days
   };
-
+  
   res
     .status(statusCode)
     .cookie('token', token, options)

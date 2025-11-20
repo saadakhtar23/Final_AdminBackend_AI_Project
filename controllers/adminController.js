@@ -155,7 +155,7 @@ export const registerHR = asyncHandler(async (req, res, next) => {
   if (!name || !email || !company) {
     return next(new ErrorResponse('Please provide name, email and company', 400));
   }
-
+ 
   const existing = await User.findOne({ email });
   if (existing) return next(new ErrorResponse('Email already registered', 400));
 
@@ -230,7 +230,7 @@ export const getRecruiterById = asyncHandler(async (req, res, next) => {
     const recruiterId = req.params.id;
     const recruiter = await User.findById(recruiterId).select('-password');
 
-    if (!recruiter || !['RMG', 'HR'].includes(recruiter.role)) {
+    if (!recruiter || !['HR'].includes(recruiter.role)) {
       return next(new ErrorResponse('Recruiter not found', 404));
     }
 
