@@ -51,7 +51,7 @@ export const createOffer = asyncHandler(async(req, res, next) => {
         salary,
         currency,
         attachments,
-        status:"JD Pending",
+        status:"JD pending",
     });
 
     const html = offerAssignedTemplate(

@@ -1,0 +1,76 @@
+{
+  "info": {
+    "name": "AI Job Description Creation",
+    "description": "API requests for AI-powered Job Description generation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create JD with AI",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"companyName\": \"TechCorp Inc\",\n  \"department\": \"Engineering\",\n  \"reportingManager\": \"John Doe\",\n  \"keyResponsibilities\": \"Leading a team of 5 developers, managing project timelines and ensuring code quality, mentoring junior developers\",\n  \"qualifications\": \"Bachelor's degree in Computer Science or related field, 5+ years of professional software development experience, expertise in Node.js and MongoDB\",\n  \"benefits\": \"Health insurance, 15 days PTO, Work from home 3 days per week, Annual performance bonus, Professional development budget, Flexible working hours\",\n  \"additionalNotes\": \"Join our young and innovative startup focused on cutting-edge technologies. We maintain a collaborative culture with regular hackathons and tech talks. Great opportunity for career growth in a fast-paced environment.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/jd/{{offerId}}/ai",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "jd", "{{offerId}}", "ai"]
+        }
+      }
+    },
+    {
+      "name": "Create JD Manually",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"jobSummary\": \"We are looking for a talented Senior Software Engineer to join our growing Engineering team. You will be responsible for architecting and implementing scalable solutions while mentoring junior developers. This is an excellent opportunity to work on cutting-edge technologies in a collaborative environment.\",\n  \"responsibilities\": [\n    \"Design and implement robust backend systems using Node.js and MongoDB\",\n    \"Lead code reviews and mentor junior developers\",\n    \"Collaborate with product managers and designers to define technical requirements\",\n    \"Optimize application performance and scalability\",\n    \"Participate in architectural decisions and system design\",\n    \"Ensure code quality through testing and best practices\",\n    \"Contribute to technical documentation and knowledge sharing\"\n  ],\n  \"requirements\": [\n    \"Bachelor's degree in Computer Science or related field\",\n    \"5+ years of professional software development experience\",\n    \"Strong expertise in Node.js and MongoDB\",\n    \"Experience with RESTful API design\",\n    \"Knowledge of cloud platforms (AWS, GCP, or Azure)\",\n    \"Excellent problem-solving skills\",\n    \"Strong communication and collaboration abilities\"\n  ],\n  \"benefits\": [\n    \"Competitive salary package\",\n    \"Health and wellness benefits\",\n    \"15 days paid time off annually\",\n    \"Work from home flexibility (3 days/week)\",\n    \"Annual performance bonus\",\n    \"Professional development budget\",\n    \"Team building activities and events\"\n  ],\n  \"additionalNotes\": \"Exciting opportunity to be part of a growing tech startup with a focus on innovation and excellence.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/jd/{{offerId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "jd", "{{offerId}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "offerId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

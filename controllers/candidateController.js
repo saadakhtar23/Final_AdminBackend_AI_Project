@@ -1,117 +1,115 @@
 import Candidate from "../models/candidate.js";
-import bcrypt from "bcryptjs";
+import JD from "../models/jobDescription.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import errorResponse from "../utils/errorResponse.js";
+import cloudinary, { uploadBuffer } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { config } from "../config/index.js";
-import User from "../models/User.js";
 
-// controllers/authController.js
+// Register candidate
+export const registerCandidate = asyncHandler(async (req, res, next) => {
+  const { name, email, password, phone } = req.body;
+  if (!name || !email || !password || !phone) return next(new errorResponse("All fields required", 400));
+  const existing = await Candidate.findOne({ email });
+  if (existing) return next(new errorResponse("Email already exists", 400));
+  const candidate = await Candidate.create({ name, email, password, phone, resume: "" });
+  sendTokenResponse(candidate, 201, res);
+});
 
+// Login candidate
+export const loginCandidate = asyncHandler(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) return next(new errorResponse("Email and password required", 400));
+  const candidate = await Candidate.findOne({ email }).select("+password");
+  if (!candidate) return next(new errorResponse("Invalid credentials", 401));
+  const isMatch = await candidate.matchPassword(password);
+  if (!isMatch) return next(new errorResponse("Invalid credentials", 401));
+  sendTokenResponse(candidate, 200, res);
+});
 
-
-export const registerCandidate = async (req, res) => {
-  try {
-    const { name, email, password, phone, resume } = req.body;
-
-    if (!name || !email || !password || !phone || !resume) {
-      return res.status(400).json({ 
-        message: "name, email, password, phone, resume are required" 
-      });
-    }
-
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ message: "Email already registered" });
-    }
-
-    const newUser = await User.create({
-      name,
-      email,
-      password,
-      phone,
-      resume,
-      role: "Candidate",
-    }); 
-
-    res.status(201).json({
-      message: "Candidate registered successfully",
-      user: {
-        _id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        phone: newUser.phone,
-        resume: newUser.resume,
-        role: newUser.role
-      }
-    });
-  } catch (error) {
-    console.log("Candidate Register Error:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-
-// LOGOUT
-export const logoutCandidate = async (req, res) => {
-  res.clearCookie("token");
-  res.status(200).json({ message: "Logged out successfully" });
-};
-
-// UPDATE (Protected)
-export const updateCandidate = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const updated = await Candidate.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
-
-    if (!updated)
-      return res.status(404).json({ message: "Candidate not found" });
-
-    res.status(200).json({ message: "Profile updated successfully", updated });
-  } catch (error) {
-    res.status(500).json({ message: "Update failed", error: error.message });
-  }
-};
-
-// DELETE (Protected)
-export const deleteCandidate = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const deleted = await Candidate.findByIdAndDelete(id);
-
-    if (!deleted)
-      return res.status(404).json({ message: "Candidate not found" });
-
-    res.status(200).json({ message: "Candidate deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Delete failed", error: error.message });
-  }
-};
-
-export const applytoJd = async(req,res)=>{
-  res.status(200).json({ message: "Applied to JD successfully" });
-}
-
-// export const applytospecificJd = async(req,res)=>{
-//   const {jobId}= req.params;
-//   const candidateId = req.user.id;
-
-//   console.log("Candidate ID:", candidateId);
-
-//   const { skills,experience,expectedCTC,currentCTC,noticePeriod}= req.body;
-//   try{
-//     const candidate = await User.findById(candidateId);
-//     if(!candidate){
-//       return res.status(404).json({
-//         message: "Candidate not found"
-//       })
-//     }
-//     if(!req.file || !req.file.path){
-//       return res.status(400).json({ message : "Resume file is required"});
-//     }
-//     const cloudResult = await 
+// Apply for a job (JD)
+// export const applyJob = asyncHandler(async (req, res, next) => {
+//   const { jdId } = req.params;
+//   const { name, email, phone, reallocate } = req.body;
+//   if (!req.files || !req.files.resume) return next(new errorResponse("Resume file required", 400));
+//   const resumeFile = req.files.resume;
+//   const resumeUrl = await cloudinary.uploader.upload(resumeFile.tempFilePath, { folder: 'candidates' });
+//   const candidate = await Candidate.findOne({ email });
+//   if (!candidate) return next(new errorResponse("Candidate not found", 404));
+//   const jd = await JD.findById(jdId);
+//   if (!jd) return next(new errorResponse("JD not found", 404));
+//   // Prevent duplicate application
+//   if (jd.appliedCandidates.some(c => c.candidate.toString() === candidate._id.toString())) {
+//     return next(new errorResponse("Already applied to this job", 400));
 //   }
-// }
- 
+//   jd.appliedCandidates.push({
+//     candidate: candidate._id,
+//     resume: resumeUrl,
+//     name,
+//     email,
+//     phone,
+//     reallocate: reallocate === "yes" || reallocate === true,
+//     status: "pending",
+//   });
+//   await jd.save();
+//   res.status(201).json({ success: true, message: "Applied successfully" });
+// });
+
+
+export const applyJob = asyncHandler(async (req, res, next) => {
+  const { jdId } = req.params;
+  const { name, email, phone, reallocate } = req.body;
+
+  if (!req.file) {
+    return next(new errorResponse("Resume file required", 400));
+  }
+
+  const uploadResult = await uploadBuffer(req.file.buffer, "candidates");
+  const resumeUrl = uploadResult.secure_url + `?v=${Date.now()}`;
+
+  const candidate = await Candidate.findOne({ email });
+  if (!candidate) return next(new errorResponse("Candidate not found", 404));
+
+  // 🔥 FIX — ALWAYS UPDATE CANDIDATE'S RESUME
+  candidate.resume = resumeUrl;
+  await candidate.save();
+
+  const jd = await JD.findById(jdId);
+  if (!jd) return next(new errorResponse("JD not found", 404));
+
+  if (jd.appliedCandidates.some(c => c.candidate.toString() === candidate._id.toString())) {
+    return next(new errorResponse("Already applied to this job", 400));
+  }
+
+  jd.appliedCandidates.push({
+    candidate: candidate._id,
+    resume: resumeUrl,
+    name,
+    email,
+    phone,
+    reallocate: reallocate === "yes" || reallocate === true,
+    status: "pending",
+  });
+
+  await jd.save();
+
+  res.status(201).json({
+    success: true,
+    message: "Applied successfully",
+  });
+});
+
+
+// Get all jobs applied by candidate
+export const getAppliedJobs = asyncHandler(async (req, res, next) => {
+  const candidateId = req.user._id;
+  const jds = await JD.find({ "appliedCandidates.candidate": candidateId });
+  res.json({ success: true, jobs: jds });
+});
+
+// Helper: send JWT
+function sendTokenResponse(candidate, statusCode, res) {
+  const payload = { id: candidate._id, role: "Candidate" };
+  const token = jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpire });
+  res.status(statusCode).json({ success: true, token });
+}

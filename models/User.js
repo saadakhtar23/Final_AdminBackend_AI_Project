@@ -3,64 +3,48 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import validator from 'validator';
 
-const roles = ['Admin', 'RMG', 'HR', 'Candidate'];
+const roles = ['Admin', 'RMG', 'HR']; // Candidate removed
 
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true, maxlength: 100 },
+const userSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true, maxlength: 100 },
 
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    validate: [validator.isEmail, 'Invalid email'],
-  },
-
-  password: { type: String, required: true, minlength: 6, select: false },
-
-  role: { type: String, enum: roles, default: 'Candidate' },
-
-  // ONLY CANDIDATE FIELDS
-  phone: {
-    type: String,
-    required: function () {
-      return this.role === "Candidate";
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, 'Invalid email'],
     },
-  },
 
-  resume: {
-    type: String, // store URL or file path
-    required: function () {
-      return this.role === "Candidate";
+    password: { type: String, required: true, minlength: 6, select: false },
+
+    role: { type: String, enum: roles, required: true },
+
+    avatar: { type: String },
+
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
     },
+
+    lastlogin: { type: Date },
+    isActive: { type: Boolean, default: true },
   },
+  { timestamps: true }
+);
 
-  avatar: { type: String },
-
-  company: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company',
-    required: function () {
-      return ['RMG', 'HR'].includes(this.role);
-    },
-  },
-
-  lastlogin: { type: Date },
-  isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
-});
-
-// Hash password
+// hash password
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, await bcrypt.genSalt(10));
   next();
 });
 
-// Compare password
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+// compare password
+userSchema.methods.matchPassword = function (enteredPassword) {
+  return bcrypt.compare(enteredPassword, this.password);
 };
 
 export default mongoose.models.User || mongoose.model('User', userSchema);
