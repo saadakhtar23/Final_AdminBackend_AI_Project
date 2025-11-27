@@ -15,7 +15,7 @@ router.post(
 router.get(
     "/",
     protect,
-    authorize("Admin"),
+    authorize("Admin", "RMG"),
     getAllTickets
 );
 
