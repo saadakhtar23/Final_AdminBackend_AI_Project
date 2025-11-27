@@ -1,3 +1,4 @@
+import candidate from "../models/candidate.js";
 import JD from "../models/jobDescription.js";
 import Offer from "../models/Offer.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -6,15 +7,14 @@ import { generateJDWithAI } from "../utils/geminiAI.js";
 import { generateUniqueToken } from "../utils/generateToken.js";
  
 // -------------------------------------------
-// HR Creates JD Manually
-// -------------------------------------------
+// HR Creates JD Manually  // -------------------------------------------
 export const createJD = asyncHandler(async (req, res, next) => {
   const { offerId } = req.params;
   const { jobSummary, responsibilities, requirements, benefits, additionalNotes } = req.body;
  
   // Validate offer exists
   const offer = await Offer.findById(offerId);
-  if (!offer) return next(new ErrorResponse("Offer not found", 404));
+    if (!offer) return next(new ErrorResponse("Offer not found", 404));
  
   // Only assigned HR can create JD
   if (offer.assignedTo.toString() !== req.user._id.toString()) {
@@ -133,4 +133,27 @@ export const getAllJds = asyncHandler(async (req, res, next) => {
     .populate('offerId')
     .populate('createdBy', 'name email');
   res.status(200).json({ success: true, count: jds.length, data: jds });
+});
+
+
+export const addresumeToJD = asyncHandler(async (req, res, next) => {
+  const { jdId } = req.params;
+  const { candidateId, name, email, phone, resume, reallocate } = req.body;
+  const jd = await JD.findById(jdId);
+  if (!jd) return next(new ErrorResponse("JD not found", 404));
+  jd.appliedCandidates.push({
+    candidate: candidateId,
+    name,
+    email,
+    phone,
+    resume,
+    reallocate,
+  });
+  await jd.save();
+  res.status(200).json({ success: true, message: "Resume added to JD successfully.", jd });
+});
+
+export const getAllCandidates = asyncHandler(async (req, res, next) => {
+  const Candidate = await candidate.find();
+  res.status(200).json({ success: true, count: Candidate.length, data: Candidate });
 });
