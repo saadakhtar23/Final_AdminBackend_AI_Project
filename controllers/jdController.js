@@ -155,5 +155,16 @@ export const addresumeToJD = asyncHandler(async (req, res, next) => {
 
 export const getAllCandidates = asyncHandler(async (req, res, next) => {
   const Candidate = await candidate.find();
+  //check that each candidate have the resume 
+  
+
   res.status(200).json({ success: true, count: Candidate.length, data: Candidate });
+});
+
+
+export const getAllCandidatesAppliedToJD = asyncHandler(async (req, res, next) => {
+  const { jdId } = req.params;
+  const jd = await JD.findById(jdId).populate('appliedCandidates.candidate', 'name email phone resume');
+  if (!jd) return next(new ErrorResponse("JD not found", 404));
+  res.status(200).json({ success: true, count: jd.appliedCandidates.length, data: jd.appliedCandidates });
 });
