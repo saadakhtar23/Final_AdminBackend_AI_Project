@@ -170,3 +170,19 @@ export const getallrecruitersandhisclosedpositions = asyncHandler(async (req, re
     res.status(200).json({ success: true, recruiterData });
 });
 
+//Recruiter Dashboard stats
+
+export const getTotalFiltredandUnFilteredCandidatesFromAllJD = asyncHandler(async (req, res, next) => {
+    const offers = await JD.find({ createdBy: req.user._id }).select("_id");
+    const offerIds = offers.map(offer => offer._id);
+    const totalFilteredCandidates = await Candidate.countDocuments({ offer: { $in: offerIds }, isFiltered: true });
+    const totalUnfilteredCandidates = await Candidate.countDocuments({ offer: { $in: offerIds }, isFiltered: false });
+    res.status(200).json({ success: true, totalFilteredCandidates, totalUnfilteredCandidates });
+});
+   
+
+export const getTotalTicketOfSpecificHR = asyncHandler(async (req, res, next) => {
+    const hrId = req.params.hrId;
+    const totalTickets = await Ticket.countDocuments({ assignedTo: hrId });
+    res.status(200).json({ success: true, totalTickets });
+}   );
