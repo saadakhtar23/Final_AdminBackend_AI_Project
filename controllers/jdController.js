@@ -197,3 +197,10 @@ export const getAssignedOffersByRMG = asyncHandler(async (req, res, next) => {
   const offers = await Offer.find({ assignedTo: req.user._id });
   res.status(200).json({ success: true, count: offers.length, data: offers });
 });
+
+export const getJdCreatedByHR = asyncHandler(async (req, res, next) => {
+  const jds = await JD.find({ createdBy: req.user._id })
+    .populate('offerId')
+    .populate('createdBy', 'name email');
+  res.status(200).json({ success: true, count: jds.length, data: jds });
+});

@@ -18,7 +18,7 @@ const ticketSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["RMG", "HR"],
+      enum: ["RMG", "HR", "Admin"],
       required: true
     },
     subject: { type: String, required: true },

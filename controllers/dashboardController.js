@@ -3,7 +3,7 @@ import errorResponse from "../utils/errorResponse.js";
 import Offer from "../models/Offer.js";
 import Ticket from "../models/Ticket.js";
 import User from "../models/User.js"
-import Candidate from "../models/Candidate.js";
+import Candidate from "../models/candidate.js";
 import JD from "../models/jobDescription.js";
 
 export const gettotalOffers = asyncHandler(async (req, res, next) => {
