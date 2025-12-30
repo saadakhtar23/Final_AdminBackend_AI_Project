@@ -204,3 +204,32 @@ export const getJdCreatedByHR = asyncHandler(async (req, res, next) => {
     .populate('createdBy', 'name email');
   res.status(200).json({ success: true, count: jds.length, data: jds });
 });
+
+
+/// 
+export const editJD = asyncHandler(async (req, res, next) => {
+  const { jdId } = req.params;
+  const updateFields = req.body;
+
+  // Find JD by ID
+  const jd = await JD.findById(jdId);
+  if (!jd) return next(new ErrorResponse("JD not found", 404));
+
+  // Optionally: Only allow the creator or assigned HR to edit
+  // if (jd.createdBy.toString() !== req.user._id.toString()) {
+  //   return next(new ErrorResponse("Not authorized to edit this JD", 403));
+  // }
+
+  // Update only provided fields
+  Object.keys(updateFields).forEach((key) => {
+    jd[key] = updateFields[key];
+  });
+
+  await jd.save();
+
+  res.status(200).json({
+    success: true,
+    message: "JD updated successfully.",
+    jd,
+  });
+});
