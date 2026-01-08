@@ -135,10 +135,28 @@ export const createJDWithAI = asyncHandler(async (req, res, next) => {
   // });
 
 export const getAllJds = asyncHandler(async (req, res, next) => {
-  const jds = await JD.find()
-    .populate('offerId')
-    .populate('createdBy', 'name email');
-  res.status(200).json({ success: true, count: jds.length, data: jds });
+  const now = new Date();
+  // Aggregate to join JD and Offer, filter by offer.dueDate
+  const jds = await JD.aggregate([
+    {
+      $lookup: {
+        from: 'offers',
+        localField: 'offerId',
+        foreignField: '_id',
+        as: 'offerObj'
+      }
+    },
+    { $unwind: '$offerObj' },
+    { $match: { 'offerObj.dueDate': { $gte: now } } },
+  ]);
+
+  // Populate createdBy for each JD
+  const populatedJds = await JD.populate(jds, [
+    { path: 'createdBy', select: 'name email' },
+    { path: 'offerId' }
+  ]);
+
+  res.status(200).json({ success: true, count: populatedJds.length, data: populatedJds });
 });
 
 

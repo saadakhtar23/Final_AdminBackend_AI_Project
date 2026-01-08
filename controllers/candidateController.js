@@ -1,3 +1,27 @@
+// Get candidate profile (self)
+export const getCandidateProfile = asyncHandler(async (req, res, next) => {
+  const candidateId = req.candidate._id;
+  const candidate = await Candidate.findById(candidateId).select('-password');
+  if (!candidate) return next(new errorResponse('Candidate not found', 404));
+  res.status(200).json({ success: true, candidate });
+});
+
+// Update candidate profile (only phone and resume)
+export const updateCandidateProfile = asyncHandler(async (req, res, next) => {
+  const candidateId = req.candidate._id;
+  const { phone } = req.body;
+  let resumeUrl = null;
+  if (req.file) {
+    const uploadResult = await uploadBuffer(req.file.buffer, "candidates");
+    resumeUrl = uploadResult.secure_url + `?v=${Date.now()}`;
+  }
+  const updateFields = {};
+  if (phone) updateFields.phone = phone;
+  if (resumeUrl) updateFields.resume = resumeUrl;
+  const candidate = await Candidate.findByIdAndUpdate(candidateId, updateFields, { new: true, runValidators: true }).select('-password');
+  if (!candidate) return next(new errorResponse('Candidate not found', 404));
+  res.status(200).json({ success: true, candidate });
+});
 import Candidate from "../models/candidate.js";
 import sendEmail from '../utils/sendEmail.js';
 import { bulkJDInviteTemplate } from '../utils/emailTemplates/bulkJDInviteTemplate.js';
@@ -49,14 +73,18 @@ export const loginCandidate = asyncHandler(async (req, res, next) => {
 
 export const applyJob = asyncHandler(async (req, res, next) => {
   const { jdId } = req.params;
-  const { name, email, phone, reallocate } = req.body;
+  const { name, email, phone, reallocate, useExistingResume, existingResumeUrl } = req.body;
 
-  if (!req.file) {
-    return next(new errorResponse("Resume file required", 400));
+  let resumeUrl = null;
+  if (useExistingResume === 'true' && existingResumeUrl) {
+    resumeUrl = existingResumeUrl;
+  } else {
+    if (!req.file) {
+      return next(new errorResponse("Resume file required", 400));
+    }
+    const uploadResult = await uploadBuffer(req.file.buffer, "candidates");
+    resumeUrl = uploadResult.secure_url + `?v=${Date.now()}`;
   }
-
-  const uploadResult = await uploadBuffer(req.file.buffer, "candidates");
-  const resumeUrl = uploadResult.secure_url + `?v=${Date.now()}`;
 
   const candidate = await Candidate.findOne({ email });
   if (!candidate) return next(new errorResponse("Candidate not found", 404));
@@ -295,6 +323,21 @@ export const getAppliedjd = asyncHandler(async (req, res, next) => {
   } catch (err) {
     return next(
       new errorResponse(err.message || "Failed to fetch applied JDs", 500)
+    );
+  }
+});
+
+export const getCandidateResume = asyncHandler(async (req, res, next) => {
+  try {
+    const candidateId = req.candidate._id;
+    const candidate = await Candidate.findById(candidateId).select("resume");
+    if (!candidate || !candidate.resume) {
+      return next(new errorResponse("Resume not found", 404));
+    }
+    res.status(200).json({ success: true, resume: candidate.resume });
+  } catch (err) {
+    return next(
+      new errorResponse(err.message || "Failed to fetch resume", 500)
     );
   }
 });
