@@ -10,7 +10,7 @@ import multer from "multer";
 const router = express.Router();
 const upload = multer();
 
-router.post("/register", registerCandidate);
+router.post("/register", upload.single("resume"), registerCandidate);
 router.post("/login", loginCandidate);
 router.post("/apply/:jdId", upload.single("resume"), applyJob);
 router.get("/profile/me", protectCandidate, getCandidateProfile);

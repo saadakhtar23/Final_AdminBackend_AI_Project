@@ -41,10 +41,18 @@ import { config } from "../config/index.js";
 // Register candidate
 export const registerCandidate = asyncHandler(async (req, res, next) => {
   const { name, email, password, phone } = req.body;
-  if (!name || !email || !password || !phone ) return next(new errorResponse("All fields required", 400));
+  if (!name || !email || !password || !phone) return next(new errorResponse("All fields required", 400));
   const existing = await Candidate.findOne({ email });
   if (existing) return next(new errorResponse("Email already exists", 400));
-  const candidate = await Candidate.create({ name, email, password, phone, resume: "" });
+
+  let resumeUrl = "";
+  if (req.file && req.file.buffer) {
+    // Upload resume to Cloudinary
+    const uploadResult = await uploadBuffer(req.file.buffer, "candidates");
+    resumeUrl = uploadResult.secure_url + `?v=${Date.now()}`;
+  }
+
+  const candidate = await Candidate.create({ name, email, password, phone, resume: resumeUrl });
   sendTokenResponse(candidate, 201, res);
 });
 
