@@ -42,7 +42,7 @@ Include:
 3. Required Skills
 4. Preferred Skills
 5. Perks & Benefits
-6. How to Apply: Click here to apply → (http://localhost:5173/CandidateRegister)
+6. How to Apply: Click here to apply → (http://103.192.198.240/CandidateRegister)
 
 Use markdown format. Do NOT include recruiter email.
 `;

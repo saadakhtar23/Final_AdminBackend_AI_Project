@@ -116,7 +116,7 @@ export const raiseTicket = async (req, res) => {
 
     // sending request to superadmin backend
     const response = await axios.post(
-      `${superAdminBaseUrl}/api/superadmin/receiveTickets`,
+      `${superAdminBaseUrl}/superadmin/receiveTickets`,
       {
         adminId: admin._id,
         adminName: admin.name,
@@ -158,7 +158,7 @@ export const replyToTicket = async (req, res) => {
 
     // 2️⃣ Sync reply to superadmin backend
     await axios.post(
-      `${superAdminBaseUrl}/api/superadmin/reply-from-admin`,
+      `${superAdminBaseUrl}/superadmin/reply-from-admin`,
       {
         ticketId,
         reply

@@ -96,7 +96,7 @@ export const syncCompanyFromExternalDB = asyncHandler(async (req, res, next) => 
 
   try {
     // 🔗 External backend URL
-    const EXTERNAL_API = `${superAdminBaseUrl}/api/superadmin/companies/${companyId}`;
+    const EXTERNAL_API = `${superAdminBaseUrl}/superadmin/companies/${companyId}`;
 
     // 🌐 Fetch company details from other DB
     const response = await axios.get(EXTERNAL_API);
