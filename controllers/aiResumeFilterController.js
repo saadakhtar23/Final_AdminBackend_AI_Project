@@ -17,11 +17,33 @@ const cleanId = (val, jd) => {
 export const filterResumes = asyncHandler(async (req, res) => {
   let { jdId } = req.params;
   jdId = jdId.trim();
+  
+  const { candidateIds } = req.body;
+  
   const jd = await JD.findById(jdId).populate("appliedCandidates.candidate");
   if (!jd) return res.status(404).json({ success: false, message: "JD not found" });
 
-  const candidatesData = jd.appliedCandidates.map((c) => ({
-    id: c.candidate?._id.toString(), // FIXED
+  const pendingCandidates = jd.appliedCandidates.filter((c) => {
+    const isPending = c.status === "pending" || !c.status;
+    
+    if (candidateIds && candidateIds.length > 0) {
+      return isPending && candidateIds.includes(c.candidate?._id.toString());
+    }
+    
+    return isPending;
+  });
+
+  if (pendingCandidates.length === 0) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "No pending candidates to filter" 
+    });
+  }
+
+  console.log(`Filtering ${pendingCandidates.length} pending candidates out of ${jd.appliedCandidates.length} total`);
+
+  const candidatesData = pendingCandidates.map((c) => ({
+    id: c.candidate?._id.toString(),
     name: c.name,
     email: c.email,
     phone: c.phone,
@@ -35,21 +57,49 @@ export const filterResumes = asyncHandler(async (req, res) => {
     return res.status(500).json({ success: false, error: aiResult.error });
   }
 
-  // FIX: Convert AI id to ObjectId reliably
-  jd.filteredCandidates = aiResult.filtered.map((f) => ({
+  const existingFilteredCandidates = jd.filteredCandidates || [];
+  const existingUnfilteredCandidates = jd.unfilteredCandidates || [];
+
+  const newFilteredCandidates = aiResult.filtered.map((f) => ({
     candidate: cleanId(f.id, jd),
     aiScore: f.score,
     aiExplanation: f.explanation,
   }));
 
-  jd.unfilteredCandidates = aiResult.unfiltered.map((f) => ({
+  const newUnfilteredCandidates = aiResult.unfiltered.map((f) => ({
     candidate: cleanId(f.id, jd),
     aiScore: f.score,
     aiExplanation: f.explanation,
   }));
+
+  const existingFilteredIds = new Set(
+    existingFilteredCandidates.map(c => c.candidate?.toString())
+  );
+  const existingUnfilteredIds = new Set(
+    existingUnfilteredCandidates.map(c => c.candidate?.toString())
+  );
+
+  jd.filteredCandidates = [
+    ...existingFilteredCandidates,
+    ...newFilteredCandidates.filter(c => !existingFilteredIds.has(c.candidate?.toString()))
+  ];
+
+  jd.unfilteredCandidates = [
+    ...existingUnfilteredCandidates,
+    ...newUnfilteredCandidates.filter(c => !existingUnfilteredIds.has(c.candidate?.toString()))
+  ];
+
+  const newlyProcessedIds = new Set([
+    ...aiResult.filtered.map((f) => cleanId(f.id, jd)),
+    ...aiResult.unfiltered.map((u) => cleanId(u.id, jd)),
+  ]);
 
   jd.appliedCandidates = jd.appliedCandidates.map((c) => {
     const id = c.candidate._id.toString();
+
+    if (!newlyProcessedIds.has(id)) {
+      return c;  
+    }
 
     const filtered = aiResult.filtered.find((f) => cleanId(f.id, jd) === id);
     const unfiltered = aiResult.unfiltered.find((u) => cleanId(u.id, jd) === id);
@@ -82,6 +132,13 @@ export const filterResumes = asyncHandler(async (req, res) => {
     message: "AI resume filtering done",
     filtered: aiResult.filtered,
     unfiltered: aiResult.unfiltered,
+    stats: {
+      totalPending: pendingCandidates.length,
+      newFiltered: aiResult.filtered.length,
+      newUnfiltered: aiResult.unfiltered.length,
+      totalFiltered: jd.filteredCandidates.length,
+      totalUnfiltered: jd.unfilteredCandidates.length,
+    }
   });
 });
 
