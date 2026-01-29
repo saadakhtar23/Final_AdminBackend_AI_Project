@@ -1,7 +1,16 @@
 
 
 
-export function shortlistedCandidate(candidateName, jdTitle, companyName, applyUrl) {
+export function shortlistedCandidate(
+  candidateName,
+  jdTitle,
+  companyName,
+  applyUrl,
+  startDate = '',
+  startTime = '',
+  endDate = '',
+  endTime = ''
+) {
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;background:#f9f9f9;border-radius:8px;">
       <h2 style="color:#28a745;">Congratulations! 🎉</h2>
@@ -18,6 +27,7 @@ export function shortlistedCandidate(candidateName, jdTitle, companyName, applyU
         <li>Log in with your registered credentials</li>
         <li>Navigate to your "Examination" section</li>
         <li>Click on the examination link to begin</li>
+        <li><strong>Examination window:</strong> <strong>Start:</strong> ${startDate} at ${startTime} — <strong>End:</strong> ${endDate} at ${endTime}</li>
       </ol>
       <p style="margin-top:24px;text-align:center;">
         <a href="${applyUrl}" style="display:inline-block;padding:12px 24px;background:#28a745;color:white;text-decoration:none;border-radius:4px;font-weight:bold;">Access Your Examination</a>
