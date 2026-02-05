@@ -123,6 +123,15 @@ export const getRecentJobTittleswithnumberofvacancies = asyncHandler(async (req,
     res.status(200).json({ success: true, recentJobs, totalJobs });
 });
 
+export const getHRJobTittleswithnumberofvacancies = asyncHandler(async (req, res, next) => {
+    const allJobs = await Offer.find()
+    .sort({ createdAt: -1 })
+    .select("jobTitle positionAvailable createdAt");
+
+    // const totalJobs = await Offer.countDocuments();
+    res.status(200).json({ success: true, allJobs });
+});
+
 export const getJdStatusPercentage = asyncHandler(async (req, res, next) => {
     const totalJds = await Offer.countDocuments();
     const openJds = await Offer.countDocuments({ status: "Open" });

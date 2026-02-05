@@ -16,7 +16,7 @@ router.post("/:jdId/filter-resumes", protect, authorize("HR"), filterResumes);
 router.get("/all-jd", protectCandidate, getAllJds);
 router.get("/all-jd-admin", protect, authorize("Admin"), getAllJds);
 router.get("/all-jd-hr", protect, authorize("HR"), getAllJds);
-router.get("/all-candidates", protect, authorize("HR", "Admin"), getAllCandidates);
+router.get("/all-candidates", protect, authorize("HR", "Admin", "RMG"), getAllCandidates);
 router.post("/:jdId/add-resume", protect, authorize("HR"), addresumeToJD);
 // router.get("/:jdId/candidates", protect, authorize("HR"), getAllCandidatesAppliedToJD); // Disabled HR-only route for candidates
 router.get("/:jdId/candidates", protectCandidate, getAllCandidatesAppliedToJD); // Enable for candidate JWT
