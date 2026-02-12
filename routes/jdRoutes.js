@@ -1,7 +1,7 @@
 import express from "express";
 import { protect } from "../middlewares/auth.js";
 import { authorize } from '../middlewares/roles.js';
-import { createJD, createJDWithAI, getAllJds, getAllCandidates, addresumeToJD, getAllCandidatesAppliedToJD, getAssignedJDsByRMG, getAssignedOffersByRMG, getFilteredCandidatesForJD, getJdCreatedByHR, editJD } from "../controllers/jdController.js";
+import { createJD, createJDWithAI, getAllJds, getAllCandidates, addresumeToJD, getAllCandidatesAppliedToJD, getAssignedJDsByRMG, getAssignedOffersByRMG, getFilteredCandidatesForJD, getJdCreatedByHR, editJD, getAllJDs } from "../controllers/jdController.js";
 import { filterResumes } from "../controllers/aiResumeFilterController.js";
 import { protectCandidate } from "../middlewares/authCandidate.js";
 
@@ -14,6 +14,7 @@ router.post("/:offerId", protect, authorize("HR"), createJD);
 router.post("/:offerId/ai", protect, authorize("HR"), createJDWithAI);
 router.post("/:jdId/filter-resumes", protect, authorize("HR"), filterResumes);
 router.get("/all-jd", protectCandidate, getAllJds);
+router.get("/allJds", getAllJDs);
 router.get("/all-jd-admin", protect, authorize("Admin"), getAllJds);
 router.get("/all-jd-hr", protect, authorize("HR"), getAllJds);
 router.get("/all-candidates", protect, authorize("HR", "Admin", "RMG"), getAllCandidates);
