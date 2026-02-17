@@ -16,7 +16,7 @@ export const ticketCreatedTemplate = (adminName, userName, role, subject, descri
  
       <br/>
       <p>Regards,</p>
-      <strong>RecruiterPro System</strong>
+      <strong>Recruter AI</strong>
     </div>
   `;
 };

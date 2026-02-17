@@ -51,7 +51,7 @@ export const registerRMG = asyncHandler(async (req, res, next) => {
     await sendEmail({
       to: email,
       subject: 'Your RMG account has been created',
-      html: buildCredentialEmail(name, email, password, 'RMG'),
+      html: buildCredentialEmails(name, email, password, 'RMG'),
     });
 
     await session.commitTransaction();
@@ -177,7 +177,7 @@ export const registerHR = asyncHandler(async (req, res, next) => {
 }); 
 
 /* Helper to build HTML credential email */
-const marginbuildCredentialEmail = (name, number, email, password, role) => {
+const buildCredentialEmail = (name, number, email, password, role) => {
   const loginUrl = 'https://recruterai.netfotech.in/login';
   const companyLine = `<p style="margin:0">Role: <strong>${role}</strong></p>`;
 
@@ -196,6 +196,46 @@ const marginbuildCredentialEmail = (name, number, email, password, role) => {
         <tr>
           <td style="padding:8px;border:1px solid #f1f5f9;width:30%">Number</td>
           <td style="padding:8px;border:1px solid #f1f5f9">${number}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border:1px solid #f1f5f9">Password</td>
+          <td style="padding:8px;border:1px solid #f1f5f9">${password}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px;border:1px solid #f1f5f9">Role</td>
+          <td style="padding:8px;border:1px solid #f1f5f9">${role}</td>
+        </tr>
+      </table>
+
+      <p style="margin-top:18px">For security, please change your password after first login. You can login here:</p>
+
+      <p style="text-align:center;margin:20px 0">
+        <a href="${loginUrl}" style="display:inline-block;padding:10px 18px;border-radius:6px;background:#0b5fff;color:#fff;text-decoration:none">Go to Login</a>
+      </p>
+
+      <hr style="border:none;border-top:1px solid #eef2ff;margin:18px 0"/>
+      <p style="color:#475569;font-size:13px;margin:0">If you didn’t expect this email, please contact your company administrator.</p>
+      <p style="color:#94a3b8;font-size:12px;margin:12px 0 0">© ${new Date().getFullYear()} Recruiter Portal</p>
+    </div>
+  </div>
+  `;
+};
+
+const buildCredentialEmails = (name, email, password, role) => {
+  const loginUrl = 'https://recruterai.netfotech.in/login';
+  const companyLine = `<p style="margin:0">Role: <strong>${role}</strong></p>`;
+
+  return `
+  <div style="font-family: Inter, Arial, sans-serif; color: #0f172a; line-height:1.5;">
+    <div style="max-width:600px;margin:0 auto;border:1px solid #e6eef8;padding:28px;border-radius:8px;">
+      <h2 style="margin-top:0;color:#0b5fff">Welcome to Recruiter Portal</h2>
+      <p>Hi <strong>${name}</strong>,</p>
+      <p>Your account has been created by your Company Admin. Use the credentials below to sign in:</p>
+
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="padding:8px;border:1px solid #f1f5f9;width:30%">Email</td>
+          <td style="padding:8px;border:1px solid #f1f5f9">${email}</td>
         </tr>
         <tr>
           <td style="padding:8px;border:1px solid #f1f5f9">Password</td>

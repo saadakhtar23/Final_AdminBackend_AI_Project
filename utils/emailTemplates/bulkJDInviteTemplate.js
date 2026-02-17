@@ -38,6 +38,9 @@ export function shortlistedCandidate(
       <p style="margin-top:24px;color:#555;">If you have any questions or concerns, feel free to reach out to us. We wish you the best of luck!</p>
       <hr style="margin:32px 0;">
       <p style="font-size:12px;color:#888;">This is an automated message from our recruitment system. Please do not reply directly.</p>
-    </div>
+      <br/>
+      <p>Regards,</p>
+      <strong>Recruter AI</strong>
+      </div>
   `;
 }

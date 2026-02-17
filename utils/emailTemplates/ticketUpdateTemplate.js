@@ -26,7 +26,7 @@ export const ticketUpdateTemplate = (userName, ticketId, newStatus, assignedToNa
  
       <br />
       <p>Regards,</p>
-      <strong>RecruiterPro System</strong>
+      <strong>Recruter AI</strong>
     </div>
   `;
 };
