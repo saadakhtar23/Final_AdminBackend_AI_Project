@@ -8,7 +8,7 @@ const offerSchema = new mongoose.Schema({
     },
     priority:{
         type:String,
-        enum:["Low", "Model", "High", "Critical"],
+        enum:["Low", "Medium", "High", "Critical"],
         default:"Low",
     },
     status:{

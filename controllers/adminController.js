@@ -269,6 +269,20 @@ export const getAllHR = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(err.message || 'Failed to fetch recruiters', 500));
   }
 });
+
+
+export const getAllHrAccordingtoComapny = asyncHandler(async (req, res, next) => {
+  try {
+    const companyId = req.user.company;
+    console.log("comapny hard",companyId);
+    
+    const recruiters = await User.find({ role: { $in: ['HR'] }, company: companyId }).select('-password');
+    res.status(200).json({ success: true, count: recruiters.length, data: recruiters });
+  } catch (err) {
+    return next(new ErrorResponse(err.message || 'Failed to fetch recruiters', 500));
+  }
+});
+
 export const getRecruiterById = asyncHandler(async (req, res, next) => {
   try { 
     const recruiterId = req.params.id;

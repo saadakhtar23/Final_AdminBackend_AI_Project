@@ -38,43 +38,59 @@ const jdSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-
+ 
+    location: {
+      type: String,
+      default: "",
+    },
+ 
+    dueDate: {
+      type: Date,
+      default: null,
+    },
+ 
+    employmentType: {
+      type: String,
+      enum: ["Full-Time", "Part-Time", "Contract", "Internship", "Freelance", "Remote", ""],
+      default: "",
+    },
+ 
     // New fields for AI-generated JD
     generatedByAI: {
       type: Boolean,
       default: false,
     },
-
+ 
     companyName: {
       type: String,
       default: "",
     },
-
+ 
     // department: {
     //   type: String,
     //   default: "",
     // },
-
+ 
     // reportingManager: {
     //   type: String,
     //   default: "",
     // },
-
+ 
     keyResponsibilities: {
       type: String,
       default: "",
     },
-
+ 
     requiredQualifications: {
       type: String,
       default: "",
     },
-
+ 
     additionalInfo: {
       type: String,
       default: "",
     },
-
+ 
     aiGenerationDetails: {
       generatedAt: {
         type: Date,
@@ -85,7 +101,7 @@ const jdSchema = new mongoose.Schema(
         default: "",
       },
     },
-
+ 
     // Unique public token for JD link
     publicToken: {
       type: String,
@@ -93,7 +109,7 @@ const jdSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-
+ 
     // Candidate application and filtering fields
     appliedCandidates: [
       {
@@ -122,7 +138,7 @@ const jdSchema = new mongoose.Schema(
           enum: ["not_sent", "sent", "failed", "bounced"],
           default: "not_sent",
         },
-        
+       
         // Timestamp when invite email was sent
         mailSentAt: { type: Date, default: null },
         // Timestamp when candidate completed the test

@@ -15,7 +15,7 @@ const app = express();
 // Middlewares
 app.use(cors({
   origin: ["https://final-frontend-ai-project.vercel.app","http://localhost:5173","http://20.81.204.72"],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]
 }))

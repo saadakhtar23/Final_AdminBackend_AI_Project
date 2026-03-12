@@ -10,7 +10,7 @@ const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
     origin: ["*","http://localhost:5173"], // Adjust as needed for security
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST','PATCH']
   }
 });
 
