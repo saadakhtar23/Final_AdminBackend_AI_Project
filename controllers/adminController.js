@@ -200,7 +200,7 @@ export const registerHR = asyncHandler(async (req, res, next) => {
 
 /* Helper to build HTML credential email */
 const buildCredentialEmail = (name, number, email, password, role) => {
-  const loginUrl = 'https://recruterai.netfotech.in/login';
+  const loginUrl = 'https://recruterai.in/login';
   const companyLine = `<p style="margin:0">Role: <strong>${role}</strong></p>`;
 
   return `
@@ -244,7 +244,7 @@ const buildCredentialEmail = (name, number, email, password, role) => {
 };
 
 const buildCredentialEmails = (name, email, password, role) => {
-  const loginUrl = 'https://recruterai.netfotech.in/login';
+  const loginUrl = 'https://recruterai.in/login';
   const companyLine = `<p style="margin:0">Role: <strong>${role}</strong></p>`;
 
   return `

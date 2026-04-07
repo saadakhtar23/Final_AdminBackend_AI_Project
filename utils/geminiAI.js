@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
+import { extractExperienceYears } from "./resumeJobRecommendation.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -244,7 +245,7 @@ export async function extractResumeText(resumeUrl) {
     },
     {
       text: `
-Extract ALL text from this document.
+Extract ALL text from this document. Preserve employment date ranges exactly as written, including phrases like Present, Till now, Current, and Ongoing.
 Tell whether it's a resume or not.
 Return JSON:
 {
@@ -263,6 +264,17 @@ Return JSON:
 
 
 
+function buildResumeTextForEvaluation(rawExtractedText) {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const inferredYears = extractExperienceYears(rawExtractedText);
+  const hint =
+    inferredYears != null
+      ? `\n\n---\nRecruiter scoring context (use together with the resume above):\n- Reference date for “ongoing” roles: ${todayStr}.\n- Treat employment end phrases Present, Till now, Until now, Current, To date, Ongoing, and Now as meaning the position continues through ${todayStr} when judging tenure.\n- From dated employment in this resume, total experience is approximately ${inferredYears} years (computed from start dates through ${todayStr} for open-ended ranges).\n---\n`
+      : `\n\n---\nRecruiter scoring context:\n- Reference date: ${todayStr}. Treat Present, Till now, Until now, Current, To date, Ongoing as end date ${todayStr} for experience duration.\n---\n`;
+  return String(rawExtractedText || "") + hint;
+}
+
 export async function evaluateResume(jd, candidate, extractedText) {
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
@@ -280,7 +292,8 @@ ${extractedText}
 Rules:
 - If the resume is NOT a resume → score 0, unfiltered, explanation why.
 - If resume is real → match skills, experience, tech stack, responsibilities.
-- Be strict. No guessing. Only rely on extracted text.
+- For work history: if a role shows a start date and an open end (Present, Till now, Current, etc.), count that role through the reference date given in the scoring context block. Do not treat open-ended dates as zero or unknown tenure.
+- Be strict. No guessing beyond the resume text and the provided scoring context.
 
 Return ONLY this JSON:
 {
@@ -316,8 +329,12 @@ export async function filterResumesWithAI(jd, candidates) {
         continue;
       }
 
-      // Step 2: Evaluate based on JD
-      const evaluation = await evaluateResume(jd, candidate, extraction.content);
+      // Step 2: Evaluate based on JD (append parsed experience so “Till now” / Present counts to today)
+      const evaluation = await evaluateResume(
+        jd,
+        candidate,
+        buildResumeTextForEvaluation(extraction.content)
+      );
 
       // Step 3: Filter by AI score primarily, then skills/experience as secondary
       // If score is high, always filter
@@ -338,7 +355,12 @@ export async function filterResumesWithAI(jd, candidates) {
       if (typeof jdSkills === 'string') {
         jdSkills = jdSkills.split(',').map(s => s.trim()).filter(Boolean);
       }
-      candidateExperience = Number(candidateExperience);
+      const inferredFromResume = extractExperienceYears(extraction.content);
+      const fromBody = Number(candidateExperience);
+      candidateExperience =
+        inferredFromResume != null && !Number.isNaN(Number(inferredFromResume))
+          ? Math.max(Number(inferredFromResume), Number.isFinite(fromBody) ? fromBody : 0)
+          : fromBody;
       jdExperience = Number(jdExperience);
       if (isNaN(candidateExperience)) candidateExperience = 0;
       if (isNaN(jdExperience)) jdExperience = 0;
